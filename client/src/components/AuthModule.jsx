@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 export default function AuthModule({ initialMode = 'login' }) {
   const [isLogin, setIsLogin] = useState(initialMode === 'login');
-
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',

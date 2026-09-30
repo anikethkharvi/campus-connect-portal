@@ -33,3 +33,14 @@ dots.forEach((dot) => {
         showSlide(Number(dot.dataset.index));
     });
 });
+
+const studentPortalBtn = document.getElementById('studentPortalBtn');
+
+studentPortalBtn.addEventListener('click', () => {
+    window.location.hash = 'student-portal';
+});
+const facultyPortalBtn = document.getElementById('facultyPortalBtn');
+
+facultyPortalBtn.addEventListener('click', () => {
+    window.location.hash = 'faculty-portal';
+});
