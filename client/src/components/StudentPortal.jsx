@@ -1,8 +1,133 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function StudentPortal({ onBackToHome }) {
 
   const [activeTab, setActiveTab] = useState('notices');
+  const [assignmentSubmitted, setAssignmentSubmitted] = useState(false);
+  const [submissionLoading, setSubmissionLoading] = useState(true);
+  const [cie1Submitted, setCIE1Submitted] = useState(false);
+  
+useEffect(() => {
+  const checkSubmission = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/submissions');
+      const data = await response.json();
+
+      // Check Assignment 1
+      const alreadySubmitted = data.some(
+        (submission) =>
+          submission.studentName === 'ANIKETH' &&
+          submission.assignmentName === 'Lab Assignment 5' &&
+          submission.status === 'Submitted'
+      );
+
+      // Check Assignment 2 - CIE 1
+      const cie1AlreadySubmitted = data.some(
+        (submission) =>
+          submission.studentName === 'ANIKETH' &&
+          submission.assignmentName === 'CIE - 1 ASSESSMENT' &&
+          submission.status === 'Submitted'
+      );
+
+      setAssignmentSubmitted(alreadySubmitted);
+      setCIE1Submitted(cie1AlreadySubmitted);
+
+    } catch (error) {
+      console.error('Error fetching submission:', error);
+    } finally {
+      setSubmissionLoading(false);
+    }
+  };
+
+  checkSubmission();
+}, []);
+
+    const handleSubmitAssignment = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          studentName: 'ANIKETH',
+          assignmentName: 'Lab Assignment 5',
+          course: 'CS3301 - Full Stack'
+        })
+      });
+
+      if (response.ok) {
+        setAssignmentSubmitted(true);
+        console.log('Assignment submitted successfully!');
+      }
+    } catch (error) {
+      console.error('Backend connection error:', error);
+    }
+  };
+  const handleSubmitCIE1 = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          studentName: 'ANIKETH',
+          assignmentName: 'CIE - 1 ASSESSMENT',
+          course: 'CS3255 - PROBABILITY THEORY'
+        })
+      });
+
+      if (response.ok) {
+        setCIE1Submitted(true);
+        console.log('CIE-1 submitted successfully!');
+      }
+    } catch (error) {
+      console.error('Backend connection error:', error);
+    }
+};
+const handleUnsubmitAssignment = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/submissions', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          studentName: 'ANIKETH',
+          assignmentName: 'Lab Assignment 5'
+        })
+      });
+
+      if (response.ok) {
+        setAssignmentSubmitted(false);
+        console.log('Assignment unsubmitted successfully!');
+      }
+    } catch (error) {
+      console.error('Unsubmit error:', error);
+    }
+  };
+  const handleUnsubmitCIE1 = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/submissions', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          studentName: 'ANIKETH',
+          assignmentName: 'CIE - 1 ASSESSMENT'
+        })
+      });
+
+      if (response.ok) {
+        setCIE1Submitted(false);
+        console.log('CIE-1 unsubmitted successfully!');
+      }
+    } catch (error) {
+      console.error('Unsubmit error:', error);
+    }
+};
 
   return (
     <div style={styles.container}>
@@ -148,37 +273,73 @@ export default function StudentPortal({ onBackToHome }) {
               </div>
 
               <div style={styles.assignmentActions}>
-                <span style={styles.pendingStatus}>
-                  Pending
+                <span
+                  style={
+                    assignmentSubmitted
+                      ? styles.submittedStatus
+                      : styles.pendingStatus
+                  }
+                >
+                  {submissionLoading
+                    ? 'Checking...'
+                    : assignmentSubmitted
+                      ? 'Submitted'
+                      : 'Pending'}
                 </span>
 
-                <button style={styles.viewButton}>
-                  Submit
+                <button
+                  style={styles.viewButton}
+                  onClick={
+                    assignmentSubmitted
+                      ? handleUnsubmitAssignment
+                      : handleSubmitAssignment
+                  }
+                  disabled={submissionLoading}
+                >
+                  {submissionLoading
+                    ? 'Checking...'
+                    : assignmentSubmitted
+                      ? 'Unsubmit'
+                      : 'Submit'}
                 </button>
+
               </div>
             </div>  
 
 
             {/* Assignment 2 */}
-            <div style={styles.notice}>
+              <div style={styles.notice}>
 
-              <div>
-                <h3 style={styles.noticeTitle}>
-                  CIE - 1 ASSESSMENT
-                </h3>
+                <div>
+                  <h3 style={styles.noticeTitle}>
+                    CIE - 1 ASSESSMENT
+                  </h3>
 
-                <p style={styles.noticeInfo}>
-                  CS3255 - PROBABILITY THEORY • Due: Sept 17, 2026
-                </p>
+                  <p style={styles.noticeInfo}>
+                    CS3255 - PROBABILITY THEORY • Due: Sept 17, 2026
+                  </p>
+                </div>
+
+                <div style={styles.assignmentActions}>
+                  <span
+                    style={cie1Submitted
+                      ? styles.submittedStatus
+                      : styles.pendingStatus}
+                  >
+                    {cie1Submitted ? 'Submitted' : 'Pending'}
+                  </span>
+
+                  <button
+                    style={styles.viewButton}
+                    onClick={cie1Submitted
+                      ? handleUnsubmitCIE1
+                      : handleSubmitCIE1}
+                  >
+                    {cie1Submitted ? 'Unsubmit' : 'Submit'}
+                  </button>
+                </div>
+
               </div>
-
-              <div style={styles.assignmentActions}>
-                <span style={styles.submittedStatus}>
-                  Submitted
-                </span>
-              </div>
-
-            </div>
 
           </>
         )}
